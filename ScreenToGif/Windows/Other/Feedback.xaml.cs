@@ -18,6 +18,7 @@ using ScreenToGif.Native.External;
 using ScreenToGif.Native.Helpers;
 using ScreenToGif.Native.Structs;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;
@@ -247,9 +248,7 @@ public partial class Feedback : Window
         sb.Append(GetProcessor());
         sb.Append(GetGraphicsAdapter());
         sb.Append("</table>");
-
-        //System.Windows.Forms.SystemInformation.PowerStatus.BatteryChargeStatus == System.Windows.Forms.BatteryChargeStatus.NoSystemBattery
-
+        
         //Monitors.
         sb.Append("<br><h2>Monitors</h2><table>");
         sb.Append("<tr><th>Name</th>");

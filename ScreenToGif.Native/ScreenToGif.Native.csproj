@@ -54,6 +54,5 @@
   
   <ItemGroup>
     <ProjectReference Include="..\ScreenToGif.Model\ScreenToGif.Domain.csproj" />
-    <ProjectReference Include="..\ScreenToGif.Util\ScreenToGif.Util.csproj" />
   </ItemGroup>
 </Project>

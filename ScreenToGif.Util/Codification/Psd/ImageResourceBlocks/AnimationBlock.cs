@@ -19,7 +19,7 @@ internal class AnimationBlock : IImageResource
             {
                 stream.WriteBytes(Encoding.ASCII.GetBytes("8BIM")); //Chunk type, 4 bytes.
                 stream.WriteUInt16(BitHelper.ConvertEndian(Identifier)); //Image Resource Id, 2 bytes.
-                stream.WritePascalString(Name); //Image Resource Name, pascal string (length + string + padding).
+                stream.WritePascalString(Name, true); //Image Resource Name, pascal string (length + string + padding).
 
                 stream.WriteUInt32(BitHelper.ConvertEndian((uint)999)); //Unpadded size, 4 bytes.
                 stream.WriteBytes(Encoding.ASCII.GetBytes("8BIM")); //Chunk signature, 4 bytes.

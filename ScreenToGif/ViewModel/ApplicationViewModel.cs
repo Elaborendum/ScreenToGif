@@ -15,7 +15,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using ScreenToGif.Controls;
 using ScreenToGif.Domain.Enums;
-using ScreenToGif.Model;
+using ScreenToGif.Domain.Models.Project.Recording;
 using ScreenToGif.Util;
 using ScreenToGif.Util.Settings;
 using ScreenToGif.Windows;
@@ -27,548 +27,379 @@ internal class ApplicationViewModel : ApplicationBaseViewModel
 {
     #region Commands
 
-    public IExtendedCommand<int, bool> Open
+    public IExtendedCommand<int, bool> Open => new AdvancedRelayCommand<int, bool>
     {
-        get
+        ExecuteAction = (startup, fromConsole) =>
         {
-            return new AdvancedRelayCommand<int, bool>
+            if (!fromConsole && UserSettings.All.StartMinimized)
+                startup = -1;
+
+            //If files are being sent via parameter, force the editor to open.
+            if (!fromConsole && Arguments.FileNames.Any())
+                startup = 4;
+
+            switch (startup)
             {
-                ExecuteAction = (startup, fromConsole) =>
+                case -1: //Minimized.
+                    return;
+
+                case 1: //Screen recorder.
                 {
-                    if (!fromConsole && UserSettings.All.StartMinimized)
-                        startup = -1;
-
-                    //If files are being sent via parameter, force the editor to open.
-                    if (!fromConsole && Arguments.FileNames.Any())
-                        startup = 4;
-
-                    switch (startup)
-                    {
-                        case -1: //Minimized.
-                        {
-                            return;
-                        }
-
-                        case 1: //Screen recorder.
-                        {
-                            if (OpenRecorder.CanExecute(null))
-                                OpenRecorder.Execute(null);
-                            return;
-                        }
-
-                        case 2: //Webcam recorder.
-                        {
-                            if (OpenWebcamRecorder.CanExecute(null))
-                                OpenWebcamRecorder.Execute(null);
-                            return;
-                        }
-
-                        case 3: //Board recorder.
-                        {
-                            if (OpenBoardRecorder.CanExecute(null))
-                                OpenBoardRecorder.Execute(null);
-                            return;
-                        }
-
-                        case 4: //Editor.
-                        {
-                            OpenEditor.Execute(null);
-                            return;
-                        }
-
-                        case 5: //Options.
-                        {
-                            OpenOptions.Execute(null);
-                            return;
-                        }
-
-                        default: //Startup.
-                        {
-                            OpenLauncher.Execute(null);
-                            return;
-                        }
-                    }
+                    if (OpenRecorder.CanExecute(null))
+                        OpenRecorder.Execute(null);
+                    return;
                 }
-            };
-        }
-    }
 
-    public ICommand OpenLauncher
-    {
-        get
-        {
-            return new RelayCommand
-            {
-                ExecuteAction = a =>
+                case 2: //Webcam recorder.
                 {
-                    var startup = Application.Current.Windows.OfType<Startup>().FirstOrDefault();
-
-                    if (startup == null)
-                    {
-                        startup = new Startup();
-                        startup.Closed += (sender, args) => { CloseOrNot(); };
-
-                        startup.Show();
-                    }
-                    else
-                    {
-                        if (startup.WindowState == WindowState.Minimized)
-                            startup.WindowState = WindowState.Normal;
-
-                        startup.Activate();
-                    }
+                    if (OpenWebcamRecorder.CanExecute(null))
+                        OpenWebcamRecorder.Execute(null);
+                    return;
                 }
-            };
-        }
-    }
 
-    public ICommand OpenRecorder
-    {
-        get
-        {
-            return new RelayCommand
-            {
-                CanExecutePredicate = o =>
+                case 3: //Board recorder.
                 {
-                    //True if all windows are not Recorders.
-                    return Application.Current?.Windows.OfType<Window>().All(a => !(a is BaseRecorder)) ?? false;
-                },
-                ExecuteAction = a =>
-                {
-                    var caller = a as Window;
-                    var editor = a as Editor;
-
-                    if (editor == null)
-                        caller?.Hide();
-
-                    if (UserSettings.All.NewRecorder)
-                    {
-                        var recorderNew = new NewRecorder();
-                        recorderNew.Closed += (sender, args) =>
-                        {
-                            var window = sender as NewRecorder;
-
-                            if (window?.Project != null && window.Project.Any)
-                            {
-                                if (editor == null)
-                                {
-                                    ShowEditor(window.Project);
-                                    caller?.Close();
-                                }
-                                else
-                                    editor.RecorderCallback(window.Project);
-                            }
-                            else
-                            {
-                                if (editor == null)
-                                {
-                                    caller?.Show();
-                                    CloseOrNot();
-                                }
-                                else
-                                    editor.RecorderCallback(null);
-                            }
-                        };
-
-                        Application.Current.MainWindow = recorderNew;
-                        recorderNew.Show();
-
-                        return;
-                    }
-
-                    var recorder = new Recorder();
-                    recorder.Closed += (sender, args) =>
-                    {
-                        var window = sender as Recorder;
-
-                        if (window?.Project != null && window.Project.Any)
-                        {
-                            if (editor == null)
-                            {
-                                ShowEditor(window.Project);
-                                caller?.Close();
-                            }
-                            else
-                                editor.RecorderCallback(window.Project);
-                        }
-                        else
-                        {
-                            if (editor == null)
-                            {
-                                caller?.Show();
-                                CloseOrNot();
-                            }
-                            else
-                                editor.RecorderCallback(null);
-                        }
-                    };
-
-                    Application.Current.MainWindow = recorder;
-                    recorder.Show();
+                    if (OpenBoardRecorder.CanExecute(null))
+                        OpenBoardRecorder.Execute(null);
+                    return;
                 }
-            };
-        }
-    }
 
-    public ICommand OpenWebcamRecorder
-    {
-        get
-        {
-            return new RelayCommand
-            {
-                CanExecutePredicate = o =>
+                case 4: //Editor.
                 {
-                    //True if all windows are not Recorders.
-                    return Application.Current?.Windows.OfType<Window>().All(a => !(a is BaseRecorder)) ?? false;
-                },
-                ExecuteAction = a =>
-                {
-                    var caller = a as Window;
-                    var editor = a as Editor;
-
-                    if (editor == null)
-                        caller?.Hide();
-
-                    var recorder = new Windows.Webcam();
-                    recorder.Closed += (sender, args) =>
-                    {
-                        var window = sender as Windows.Webcam;
-
-                        if (window?.Project != null && window.Project.Any)
-                        {
-                            if (editor == null)
-                            {
-                                ShowEditor(window.Project);
-                                caller?.Close();
-                            }
-                            else
-                                editor.RecorderCallback(window.Project);
-                        }
-                        else
-                        {
-                            if (editor == null)
-                            {
-                                caller?.Show();
-                                CloseOrNot();
-                            }
-                            else
-                                editor.RecorderCallback(null);
-                        }
-                    };
-
-                    Application.Current.MainWindow = recorder;
-                    recorder.Show();
+                    OpenEditor.Execute(null);
+                    return;
                 }
-            };
-        }
-    }
 
-    public ICommand OpenBoardRecorder
-    {
-        get
-        {
-            return new RelayCommand
-            {
-                CanExecutePredicate = o =>
+                case 5: //Options.
                 {
-                    //True if all windows are not Recorders.
-                    return Application.Current?.Windows.OfType<Window>().All(a => !(a is BaseRecorder)) ?? false;
-                },
-                ExecuteAction = a =>
-                {
-                    var caller = a as Window;
-                    var editor = a as Editor;
-
-                    if (editor == null)
-                        caller?.Hide();
-
-                    var recorder = new Board();
-                    recorder.Closed += (sender, args) =>
-                    {
-                        var window = sender as Board;
-
-                        if (window?.Project != null && window.Project.Any)
-                        {
-                            if (editor == null)
-                            {
-                                ShowEditor(window.Project);
-                                caller?.Close();
-                            }
-                            else
-                                editor.RecorderCallback(window.Project);
-                        }
-                        else
-                        {
-                            if (editor == null)
-                            {
-                                caller?.Show();
-                                CloseOrNot();
-                            }
-                            else
-                                editor.RecorderCallback(null);
-                        }
-                    };
-
-                    Application.Current.MainWindow = recorder;
-                    recorder.Show();
+                    OpenOptions.Execute(null);
+                    return;
                 }
-            };
-        }
-    }
 
-    public ICommand OpenEditor
-    {
-        get
-        {
-            return new RelayCommand
-            {
-                CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
-                ExecuteAction = a =>
+                default: //Startup.
                 {
-                    var caller = a as Window;
-
-                    //TODO: Should it behave the same way as it does after a recording? Always open a new one or simply show all/one that was already opened?
-                    ShowEditor(null, a is string[]);
-
-                    caller?.Close();
+                    OpenLauncher.Execute(null);
+                    return;
                 }
-            };
+            }
         }
-    }
+    };
 
-    public ICommand OpenOptions
+    public ICommand OpenLauncher => new RelayCommand
     {
-        get
+        ExecuteAction = a =>
         {
-            return new RelayCommand
+            var startup = Application.Current.Windows.OfType<Startup>().FirstOrDefault();
+
+            if (startup == null)
             {
-                CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
-                ExecuteAction = a =>
+                startup = new Startup();
+                startup.Closed += (_, _) => CloseOrNot();
+
+                startup.Show();
+            }
+            else
+            {
+                if (startup.WindowState == WindowState.Minimized)
+                    startup.WindowState = WindowState.Normal;
+
+                startup.Activate();
+            }
+        }
+    };
+
+    public ICommand OpenRecorder => new RelayCommand
+    {
+        CanExecutePredicate = o =>
+        {
+            //True if all windows are not Recorders.
+            return Application.Current?.Windows.OfType<Window>().All(a => a is not BaseRecorder) ?? false;
+        },
+        ExecuteAction = a =>
+        {
+            var caller = a as Window;
+            var editor = a as EditorEx;
+
+            if (editor == null)
+                caller?.Hide();
+
+            if (UserSettings.All.NewRecorder)
+            {
+                var recorderNew = new NewRecorder();
+                recorderNew.Closed += async (sender, args) => await RecorderCallback(caller, editor, sender, args);
+
+                Application.Current.MainWindow = recorderNew;
+                recorderNew.Show();
+
+                return;
+            }
+
+            var recorder = new Recorder();
+            recorder.Closed += async (sender, args) => await RecorderCallback(caller, editor, sender, args);
+
+            Application.Current.MainWindow = recorder;
+            recorder.Show();
+        }
+    };
+
+    public ICommand OpenWebcamRecorder => new RelayCommand
+    {
+        CanExecutePredicate = o =>
+        {
+            //True if all windows are not Recorders.
+            return Application.Current?.Windows.OfType<Window>().All(a => a is not BaseRecorder) ?? false;
+        },
+        ExecuteAction = a =>
+        {
+            var caller = a as Window;
+            var editor = a as EditorEx;
+
+            if (editor == null)
+                caller?.Hide();
+
+            var recorder = new Windows.Webcam();
+            recorder.Closed += async (sender, args) => await RecorderCallback(caller, editor, sender, args);
+
+            Application.Current.MainWindow = recorder;
+            recorder.Show();
+        }
+    };
+
+    public ICommand OpenBoardRecorder => new RelayCommand
+    {
+        CanExecutePredicate = o =>
+        {
+            //True if all windows are not Recorders.
+            return Application.Current?.Windows.OfType<Window>().All(a => a is not BaseRecorder) ?? false;
+        },
+        ExecuteAction = a =>
+        {
+            var caller = a as Window;
+            var editor = a as EditorEx;
+
+            if (editor == null)
+                caller?.Hide();
+
+            var recorder = new Board();
+            recorder.Closed += async (sender, args) => await RecorderCallback(caller, editor, sender, args);
+
+            Application.Current.MainWindow = recorder;
+            recorder.Show();
+        }
+    };
+
+    public ICommand OpenEditor => new RelayCommand
+    {
+        CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
+        ExecuteAction = async a =>
+        {
+            var caller = a as Window;
+
+            //TODO: Should it behave the same way as it does after a recording? Always open a new one or simply show all/one that was already opened?
+            await ShowEditor(null, a is string[]);
+
+            caller?.Close();
+        }
+    };
+
+    public ICommand OpenOptions => new RelayCommand
+    {
+        CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
+        ExecuteAction = a =>
+        {
+            var options = Application.Current.Windows.OfType<Options>().FirstOrDefault();
+            var tab = a as int? ?? 0; //Parameter that selects which tab to be displayed.
+
+            if (options == null)
+            {
+                options = new Options(tab);
+                options.Closed += (_, _) => CloseOrNot();
+
+                //TODO: Open as dialog or not? Block other windows?
+                options.Show();
+            }
+            else
+            {
+                if (options.WindowState == WindowState.Minimized)
+                    options.WindowState = WindowState.Normal;
+
+                options.SelectTab(tab);
+                options.Activate();
+            }
+        }
+    };
+
+    public ICommand OpenFeedback => new RelayCommand
+    {
+        CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
+        ExecuteAction = a =>
+        {
+            var feedback = Application.Current.Windows.OfType<Feedback>().FirstOrDefault();
+
+            if (feedback == null)
+            {
+                feedback = new Feedback();
+                feedback.Closed += async (sender, args) =>
                 {
-                    var options = Application.Current.Windows.OfType<Options>().FirstOrDefault();
-                    var tab = a as int? ?? 0; //Parameter that selects which tab to be displayed.
+                    await Task.Factory.StartNew(App.MainViewModel.SendFeedback, TaskCreationOptions.LongRunning);
 
-                    if (options == null)
-                    {
-                        options = new Options(tab);
-                        options.Closed += (sender, args) =>
-                        {
-                            CloseOrNot();
-                        };
+                    CloseOrNot();
+                };
 
-                        //TODO: Open as dialog or not? Block other windows?
-                        options.Show();
-                    }
-                    else
-                    {
-                        if (options.WindowState == WindowState.Minimized)
-                            options.WindowState = WindowState.Normal;
-
-                        options.SelectTab(tab);
-                        options.Activate();
-                    }
-                }
-            };
-        }
-    }
-
-    public ICommand OpenFeedback
-    {
-        get
-        {
-            return new RelayCommand
+                feedback.ShowDialog();
+            }
+            else
             {
-                CanExecutePredicate = a => true, //TODO: Always let this window opens or check if there's any other recorder active?
-                ExecuteAction = a =>
+                if (feedback.WindowState == WindowState.Minimized)
+                    feedback.WindowState = WindowState.Normal;
+
+                feedback.Activate();
+            }
+        }
+    };
+
+    public ICommand OpenTroubleshoot => new RelayCommand
+    {
+        CanExecutePredicate = a => true,
+        ExecuteAction = a =>
+        {
+            var trouble = Application.Current.Windows.OfType<Troubleshoot>().FirstOrDefault();
+
+            if (trouble == null)
+            {
+                trouble = new Troubleshoot();
+                trouble.Closed += (sender, args) =>
                 {
-                    var feedback = Application.Current.Windows.OfType<Feedback>().FirstOrDefault();
+                    CloseOrNot();
+                };
 
-                    if (feedback == null)
-                    {
-                        feedback = new Feedback();
-                        feedback.Closed += async (sender, args) =>
-                        {
-                            await Task.Factory.StartNew(App.MainViewModel.SendFeedback, TaskCreationOptions.LongRunning);
-
-                            CloseOrNot();
-                        };
-
-                        feedback.ShowDialog();
-                    }
-                    else
-                    {
-                        if (feedback.WindowState == WindowState.Minimized)
-                            feedback.WindowState = WindowState.Normal;
-
-                        feedback.Activate();
-                    }
-                }
-            };
-        }
-    }
-
-    public ICommand OpenTroubleshoot
-    {
-        get
-        {
-            return new RelayCommand
+                trouble.ShowDialog();
+            }
+            else
             {
-                CanExecutePredicate = a => true,
-                ExecuteAction = a =>
-                {
-                    var trouble = Application.Current.Windows.OfType<Troubleshoot>().FirstOrDefault();
+                if (trouble.WindowState == WindowState.Minimized)
+                    trouble.WindowState = WindowState.Normal;
 
-                    if (trouble == null)
-                    {
-                        trouble = new Troubleshoot();
-                        trouble.Closed += (sender, args) =>
-                        {
-                            CloseOrNot();
-                        };
-
-                        trouble.ShowDialog();
-                    }
-                    else
-                    {
-                        if (trouble.WindowState == WindowState.Minimized)
-                            trouble.WindowState = WindowState.Normal;
-
-                        trouble.Activate();
-                    }
-                }
-            };
+                trouble.Activate();
+            }
         }
-    }
+    };
 
-    public ICommand OpenHelp
+    public ICommand OpenHelp => new RelayCommand
     {
-        get
+        CanExecutePredicate = a => true,
+        ExecuteAction = a =>
         {
-            return new RelayCommand
+            try
             {
-                CanExecutePredicate = a => true,
-                ExecuteAction = a =>
-                {
-                    try
-                    {
-                        ProcessHelper.StartWithShell("https://github.com/NickeManarin/ScreenToGif/wiki/Help");
-                    }
-                    catch (Exception ex)
-                    {
-                        LogWriter.Log(ex, "Openning the Help link");
-                    }
-                }
-            };
+                ProcessHelper.StartWithShell("https://github.com/NickeManarin/ScreenToGif/wiki/Help");
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Openning the Help link");
+            }
         }
-    }
+    };
 
-    public ICommand TrayLeftClick
+    public ICommand TrayLeftClick => new RelayCommand
     {
-        get
-        {
-            return new RelayCommand
-            {
-                ExecuteAction = a => Interact(UserSettings.All.LeftClickAction, UserSettings.All.LeftOpenWindow)
-            };
-        }
-    }
+        ExecuteAction = a => Interact(UserSettings.All.LeftClickAction, UserSettings.All.LeftOpenWindow)
+    };
 
-    public ICommand TrayDoubleLeftClick
+    public ICommand TrayDoubleLeftClick => new RelayCommand
     {
-        get
-        {
-            return new RelayCommand
-            {
-                ExecuteAction = a => Interact(UserSettings.All.DoubleLeftClickAction, UserSettings.All.DoubleLeftOpenWindow)
-            };
-        }
-    }
+        ExecuteAction = a => Interact(UserSettings.All.DoubleLeftClickAction, UserSettings.All.DoubleLeftOpenWindow)
+    };
 
-    public ICommand TrayMiddleClick
+    public ICommand TrayMiddleClick => new RelayCommand
     {
-        get
-        {
-            return new RelayCommand
-            {
-                ExecuteAction = a => Interact(UserSettings.All.MiddleClickAction, UserSettings.All.MiddleOpenWindow)
-            };
-        }
-    }
+        ExecuteAction = a => Interact(UserSettings.All.MiddleClickAction, UserSettings.All.MiddleOpenWindow)
+    };
 
-    public ICommand PromptUpdate
+    public ICommand PromptUpdate => new RelayCommand
     {
-        get
+        ExecuteAction = a =>
         {
-            return new RelayCommand
-            {
-                ExecuteAction = a =>
-                {
-                    if (Global.UpdateAvailable == null)
-                        return;
+            if (Global.UpdateAvailable == null)
+                return;
 
-                    //Try to install the update, closing the app if sucessful.
-                    if (InstallUpdate(true))
-                        Application.Current.Shutdown(69);
-                }
-            };
+            //Try to install the update, closing the app if sucessful.
+            if (InstallUpdate(true))
+                Application.Current.Shutdown(69);
         }
-    }
+    };
 
-    public ICommand ExitApplication
+    public ICommand ExitApplication => new RelayCommand
     {
-        get
+        CanExecutePredicate = o =>
         {
-            return new RelayCommand
-            {
-                CanExecutePredicate = o =>
-                {
-                    //TODO: Check if there's anything open or anything happening with editors.
-                    return Application.Current?.Windows.OfType<BaseRecorder>().All(a => a.Stage != RecorderStages.Recording) ?? false;
-                },
-                ExecuteAction = a =>
-                {
-                    if (UserSettings.All.NotifyWhileClosingApp && !Dialog.Ask(LocalizationHelper.Get("S.Exiting.Title"), LocalizationHelper.Get("S.Exiting.Instruction"), LocalizationHelper.Get("S.Exiting.Message")))
-                        return;
+            //TODO: Check if there's anything open or anything happening with editors.
+            return Application.Current?.Windows.OfType<BaseRecorder>().All(a => a.Stage != RecorderStages.Recording) ?? false;
+        },
+        ExecuteAction = a =>
+        {
+            if (UserSettings.All.NotifyWhileClosingApp && !Dialog.Ask(LocalizationHelper.Get("S.Exiting.Title"), LocalizationHelper.Get("S.Exiting.Instruction"), LocalizationHelper.Get("S.Exiting.Message")))
+                return;
 
-                    if (UserSettings.All.DeleteCacheWhenClosing)
-                        StorageUtils.PurgeCache();
+            if (UserSettings.All.DeleteCacheWhenClosing)
+                StorageUtils.PurgeCache();
 
-                    Application.Current.Shutdown(69);
-                }
-            };
+            Application.Current.Shutdown(69);
         }
-    }
+    };
 
     #endregion
 
     #region Methods
 
-    private void ShowEditor(ProjectInfo project = null, bool openMedia = false)
+    private async Task RecorderCallback(Window caller, EditorEx editor, object sender, EventArgs args)
     {
-        var editor = Application.Current.Windows.OfType<Editor>().FirstOrDefault(f => f.Project == null || !f.Project.Any);
+        var window = sender as BaseRecorder;
+
+        if (window?.Project != null && window.Project.Any)
+        {
+            if (editor == null)
+            {
+                await ShowEditor(window.Project);
+                caller?.Close();
+                return;
+            }
+
+            await editor.LoadProject(window.Project);
+            return;
+        }
 
         if (editor == null)
         {
-            editor = new Editor { Project = project };
-            editor.Closed += (sender, args) => CloseOrNot();
+            caller?.Show();
+            CloseOrNot();
+            return;
+        }
+
+        await editor.LoadProject(null);
+    }
+
+    private async Task ShowEditor(RecordingProject project = null, bool openMedia = false)
+    {
+        var editor = Application.Current.Windows.OfType<EditorEx>().FirstOrDefault(f => f.HasProjectLoaded);
+
+        if (editor == null)
+        {
+            editor = new EditorEx();
+            editor.Closed += (_, _) => CloseOrNot();
             editor.Show();
         }
         else
         {
-            //TODO: Three modes for opening the editor:
-            //Always open a new window.
-            //Open a new window if there's no window without any project loaded.
-            //Open a new window if there's no idle window (with a project loaded).
-
             //TODO: Detect if the last state was normal/maximized.
             if (editor.WindowState == WindowState.Minimized)
                 editor.WindowState = WindowState.Normal;
-
-            if (project != null)
-                editor.LoadProject(project, true, false);
-            else if (openMedia)
-                editor.LoadFromArguments();
         }
+
+        if (project != null)
+            await editor.LoadProject(project);
+        else if (openMedia)
+            editor.LoadFromArguments();
 
         Application.Current.MainWindow = editor;
         editor.Activate();
@@ -1310,7 +1141,7 @@ internal class ApplicationViewModel : ApplicationBaseViewModel
 
             //msiexec /i PATH INSTALLDIR="" INSTALLAUTOMATICALLY=yes INSTALLPORTABLE=No ADDLOCAL=Binary
             //msiexec /a PATH TARGETDIR="" INSTALLAUTOMATICALLY=yes INSTALLPORTABLE=yes ADDLOCAL=Binary
-                
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = "msiexec",

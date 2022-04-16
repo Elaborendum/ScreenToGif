@@ -30,6 +30,9 @@ namespace ScreenToGif.Util.Settings;
 public class UserSettings : INotifyPropertyChanged
 {
     #region Variables
+    
+    private Version _version;
+
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -37,7 +40,7 @@ public class UserSettings : INotifyPropertyChanged
 
     public static UserSettings All { get; } = new();
 
-    public Version Version => Assembly.GetEntryAssembly()?.GetName().Version;
+    public Version Version => _version ??= Assembly.GetEntryAssembly()?.GetName().Version;
 
     public string VersionText => Version?.ToStringShort() ?? "0.0";
 

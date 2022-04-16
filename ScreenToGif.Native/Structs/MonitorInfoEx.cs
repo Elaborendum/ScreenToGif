@@ -4,7 +4,7 @@ using ScreenToGif.Domain.Models.Native;
 namespace ScreenToGif.Native.Structs;
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
-internal class MonitorInfoEx
+public class MonitorInfoEx
 {
     /// <summary>
     /// The size, in bytes, of the structure. Set this member to sizeof(MONITORINFOEX) (72) before calling the GetMonitorInfo function.

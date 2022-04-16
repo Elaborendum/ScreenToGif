@@ -84,14 +84,12 @@ public class Ribbon : TabControl
     }
 
     #endregion
-
-
+    
     static Ribbon()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(Ribbon), new FrameworkPropertyMetadata(typeof(Ribbon)));
     }
-
-
+    
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -140,7 +138,7 @@ public class Ribbon : TabControl
         if (IsDisplayingContent)
         {
             //Increase the size and opacity of the content border.
-            _contentPresenter.BeginAnimation(MarginProperty, new ThicknessAnimation(new Thickness(-20, 0, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 1)))
+            _contentPresenter.BeginAnimation(MarginProperty, new ThicknessAnimation(new Thickness(-10, 3, 3, 0), new Thickness(3, 3, 3, 0), new Duration(new TimeSpan(0, 0, 0, 1)))
             {
                 EasingFunction = new PowerEase { Power = 9 }
             });
@@ -158,12 +156,12 @@ public class Ribbon : TabControl
         //Increase the size and opacity of the content border.
         _contentBorder.BeginAnimation(HeightProperty, new DoubleAnimation(_contentBorder.ActualHeight, 98, new Duration(new TimeSpan(0, 0, 0, 1)))
         {
-            EasingFunction = new PowerEase { Power = 9 }
+            EasingFunction = new PowerEase { Power = 11 }
         });
 
         _contentBorder.BeginAnimation(OpacityProperty, new DoubleAnimation(_contentBorder.Opacity, 1, new Duration(new TimeSpan(0, 0, 0, 1)))
         {
-            EasingFunction = new PowerEase { Power = 9 }
+            EasingFunction = new PowerEase { Power = 11 }
         });
 
         //Show the "Hide panel" button.
@@ -175,7 +173,7 @@ public class Ribbon : TabControl
         //Decrease the size of the TabItem list. 
         _tabScrollViewer.BeginAnimation(MarginProperty, new ThicknessAnimation(_tabPanel.Margin, new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 1)))
         {
-            EasingFunction = new PowerEase { Power = 9 }
+            EasingFunction = new PowerEase { Power = 11 }
         });
 
         _tabPanel.Children[SelectedIndex].BeginAnimation(RibbonTab.DisplayAccentProperty, new BooleanAnimationUsingKeyFrames

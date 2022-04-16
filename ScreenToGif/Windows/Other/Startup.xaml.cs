@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;

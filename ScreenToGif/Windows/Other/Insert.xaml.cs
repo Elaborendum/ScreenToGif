@@ -262,7 +262,7 @@ public partial class Insert : Window
 
         #region Set as Maximized if the window gets big enough
 
-        var size = Native.Helpers.Windows.ScreenSizeFromWindow(this);
+        var size = Util.Native.Windows.ScreenSizeFromWindow(this);
 
         if (size.Height - Height < 200 || size.Width - Width < 200)
             WindowState = WindowState.Maximized;

@@ -17,10 +17,6 @@ public class SimpleMouseGesture
     /// </summary>
     public NativeMouseEvents EventType { get; }
 
-
-    public long Timestamp { get; set; }
-
-
     /// <summary>
     /// X Axis position
     /// </summary>
@@ -31,7 +27,6 @@ public class SimpleMouseGesture
     /// </summary>
     public int PosY { get; }
         
-
     /// <summary>
     /// State of the left mouse button.
     /// </summary>
@@ -62,18 +57,17 @@ public class SimpleMouseGesture
     /// </summary>
     public short MouseDelta { get; }
 
-        
     /// <summary>
     /// True if this event args is a registration of a mouse down event.
     /// </summary>
-    public bool IsMouseDown => EventType == NativeMouseEvents.LeftButtonDown || EventType == NativeMouseEvents.RightButtonDown || EventType == NativeMouseEvents.MiddleButtonDown || 
-                               EventType == NativeMouseEvents.ExtraButtonDown || EventType == NativeMouseEvents.OutsideExtraButtonDown;
+    public bool IsMouseDown => EventType is NativeMouseEvents.LeftButtonDown or NativeMouseEvents.RightButtonDown or NativeMouseEvents.MiddleButtonDown
+        or NativeMouseEvents.ExtraButtonDown or NativeMouseEvents.OutsideExtraButtonDown;
 
     /// <summary>
     /// True if this event args is a registration of a mouse double click event.
     /// </summary>
-    public bool IsMouseDoubleClick => EventType == NativeMouseEvents.LeftButtonDoubleClick || EventType == NativeMouseEvents.RightButtonDoubleClick || EventType == NativeMouseEvents.MiddleButtonDoubleClick ||
-                                      EventType == NativeMouseEvents.ExtraButtonDoubleClick || EventType == NativeMouseEvents.OutsideExtraButtonDoubleClick;
+    public bool IsMouseDoubleClick => EventType is NativeMouseEvents.LeftButtonDoubleClick or NativeMouseEvents.RightButtonDoubleClick or NativeMouseEvents.MiddleButtonDoubleClick
+        or NativeMouseEvents.ExtraButtonDoubleClick or NativeMouseEvents.OutsideExtraButtonDoubleClick;
 
     /// <summary>
     /// True if the action of clicking or scrolling happened.

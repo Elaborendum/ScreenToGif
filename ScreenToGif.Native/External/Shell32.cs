@@ -25,7 +25,7 @@ namespace ScreenToGif.Native.External
         /// "find"       - Start a search.
         /// </summary>
         [DllImport(Constants.Shell32, CharSet = CharSet.Auto)]
-        internal static extern bool ShellExecuteEx(ref ShellExecuteInfo lpExecInfo);
+        public static extern bool ShellExecuteEx(ref ShellExecuteInfo lpExecInfo);
 
         /// <summary>
         /// Creates, updates or deletes the taskbar icon.

@@ -12,7 +12,7 @@ public class KeyGestureToString : IValueConverter
         if (value is not KeyGesture gesture || gesture.Key == Key.None)
             return Binding.DoNothing;
 
-        return $"{Native.Helpers.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)}";
+        return $"{Native.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)}";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

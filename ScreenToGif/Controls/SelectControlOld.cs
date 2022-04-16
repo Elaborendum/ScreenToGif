@@ -16,6 +16,7 @@ using ScreenToGif.Native.External;
 using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Controls;
@@ -903,7 +904,7 @@ public class SelectControlOld : Control
     public void AdjustMode()
     {
         if (Mode == ModeType.Window)
-            Windows = Native.Helpers.Windows.EnumerateWindows(Scale).AdjustPosition(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop);
+            Windows = Util.Native.Windows.EnumerateWindows(Scale).AdjustPosition(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop);
         else if (Mode == ModeType.Fullscreen)
             Windows = MonitorHelper.AllMonitorsScaled(Scale, true).Select(x => new DetectedRegion(x.Handle, x.Bounds.Offset(-1), x.Name)).ToList();
         else

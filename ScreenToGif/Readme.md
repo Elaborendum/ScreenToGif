@@ -29,3 +29,32 @@ _VS 2022 and .NET 6 or newer required._
 ♠ When using the capture option "Capture a frame only when something changes on screen" and moving the recording window, the recording will glitch.  
 ♠ The Previous/Next repeat buttons are only triggering the events once (because of the command).   
 ♠ Capturing with DirectX using a screen not in landscaped mode results in a rotated frame.
+
+### Behavior
+
+Normal (via recording):
+    RecordingProject -> CachedProject -> ProjectViewModel -> Project.stg
+Importing project or media:
+    CachedProject -> ProjectViewModel -> Project.stg
+Skipping edit:
+    RecordingProject -> Project.stg
+
+RecordingProject:
+    Created by recorders, fast and direct to point.
+
+    Structure:
+        PropertiesCache
+        FrameCache
+        EventCache
+
+CachedProject
+    In use by the editor.
+    Should handle two-way comunication with ViewModel.
+
+    Structure:
+        PropertiesCache
+        Tracks
+            FrameSequenceCache
+            CursorCache
+            KeyCache
+            Other caches

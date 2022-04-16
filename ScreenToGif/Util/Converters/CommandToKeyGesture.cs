@@ -18,7 +18,7 @@ public class CommandToKeyGesture : IValueConverter
 
         foreach (KeyGesture gesture in command.InputGestures)
             if (gesture.Key != Key.None)
-                return $"{Native.Helpers.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)}";
+                return $"{Util.Native.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)}";
 
         return Binding.DoNothing;
     }

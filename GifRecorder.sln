@@ -24,6 +24,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScreenToGif.Test", "ScreenToGif.Test\ScreenToGif.Test.csproj", "{9D64714B-20BC-4A18-B89F-FA432E710EB4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScreenToGif.Util", "ScreenToGif.Util\ScreenToGif.Util.csproj", "{B39A6DFB-F44E-403D-9451-3CEAD3423135}"
+	ProjectSection(ProjectDependencies) = postProject
+		{66D60F4A-C0B4-4077-8DE6-0431F6AD5E87} = {66D60F4A-C0B4-4077-8DE6-0431F6AD5E87}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScreenToGif.ViewModel", "ScreenToGif.ViewModel\ScreenToGif.ViewModel.csproj", "{97AAAA14-2793-49B7-96C5-6C6E83C55EB7}"
 EndProject

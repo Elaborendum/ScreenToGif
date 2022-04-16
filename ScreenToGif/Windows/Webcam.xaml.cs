@@ -11,8 +11,8 @@ using Microsoft.Win32;
 using ScreenToGif.Domain.Enums;
 using ScreenToGif.Domain.Events;
 using ScreenToGif.Model;
-using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 using ScreenToGif.Webcam.DirectX;
 using ScreenToGif.Windows.Other;
@@ -40,7 +40,7 @@ public partial class Webcam
 
     #endregion
 
-    private Timer _timer = new Timer();
+    private Timer _timer = new();
 
     /// <summary>
     /// The DPI of the current screen.
@@ -282,7 +282,7 @@ public partial class Webcam
         {
             try
             {
-                File.Delete(frame.Path);
+                //File.Delete(frame.Path);
             }
             catch (Exception)
             { }
@@ -290,7 +290,7 @@ public partial class Webcam
 
         try
         {
-            Directory.Delete(Project.FullPath, true);
+            //Directory.Delete(Project.FullPath, true);
         }
         catch (Exception ex)
         {
@@ -308,19 +308,19 @@ public partial class Webcam
 
     private void Normal_Elapsed(object sender, EventArgs e)
     {
-        var fileName = $"{Project.FullPath}{_frameCount}.png";
-        Project.Frames.Add(new FrameInfo(fileName, _timer.Interval));
+        //var fileName = $"{Project.FullPath}{_frameCount}.png";
+        //Project.Frames.Add(new FrameInfo(fileName, _timer.Interval));
 
         //Get the actual position of the form.
-        var lefttop = Dispatcher.Invoke<System.Drawing.Point>(() => new System.Drawing.Point((int)Math.Round((Left + _offsetX) * _scale, MidpointRounding.AwayFromZero),
+        var lefttop = Dispatcher.Invoke(() => new System.Drawing.Point((int)Math.Round((Left + _offsetX) * _scale, MidpointRounding.AwayFromZero),
             (int)Math.Round((Top + _offsetY) * _scale, MidpointRounding.AwayFromZero)));
 
         //Take a screenshot of the area.
-        var bt = Native.Helpers.Capture.CaptureScreenAsBitmap((int)Math.Round(WebcamControl.ActualWidth * _scale, MidpointRounding.AwayFromZero),
+        var bt = Util.Native.Capture.CaptureScreenAsBitmap((int)Math.Round(WebcamControl.ActualWidth * _scale, MidpointRounding.AwayFromZero),
             (int)Math.Round(WebcamControl.ActualHeight * _scale, MidpointRounding.AwayFromZero), lefttop.X, lefttop.Y);
 
         //await Task.Run(() => AddFrames(fileName, new Bitmap(bt)));
-        AddFrames(fileName, new Bitmap(bt));
+        //AddFrames(fileName, new Bitmap(bt));
 
         Dispatcher.Invoke(() => Title = $"ScreenToGif • {_frameCount}");
 
@@ -347,7 +347,7 @@ public partial class Webcam
 
             _timer = new Timer { Interval = 1000 / FpsNumericUpDown.Value };
 
-            Project = new ProjectInfo().CreateProjectFolder(ProjectByType.WebcamRecorder);
+            //Project = new ProjectInfo().CreateProjectFolder(ProjectSources.WebcamRecorder);
 
             RefreshButton.IsEnabled = false;
             VideoDevicesComboBox.IsEnabled = false;
@@ -565,10 +565,10 @@ public partial class Webcam
     {
         try
         {
-            var source = Dispatcher.Invoke<PresentationSource>(() => PresentationSource.FromVisual(this));
+            var source = Dispatcher.Invoke(() => PresentationSource.FromVisual(this));
 
             if (source?.CompositionTarget != null)
-                _scale = Dispatcher.Invoke<double>(() => source.CompositionTarget.TransformToDevice.M11);
+                _scale = Dispatcher.Invoke(() => source.CompositionTarget.TransformToDevice.M11);
         }
         finally
         {

@@ -101,10 +101,10 @@ public class SideScrollViewer : ScrollViewer
         try
         {
             //Animate the border until it reaches the selected item.
-            if (!(obj is SideScrollViewer viewer))
+            if (obj is not SideScrollViewer viewer)
                 return;
 
-            if (!(viewer.Content is StackPanel stack))
+            if (viewer.Content is not StackPanel stack)
                 return;
 
             //Selection validation.
@@ -122,7 +122,7 @@ public class SideScrollViewer : ScrollViewer
 
             viewer._selectionBorder.Visibility = Visibility.Visible;
 
-            if (!(stack.Children[oldIndex] is RibbonTab previousTab) || !(stack.Children[newIndex] is RibbonTab nextTab))
+            if (stack.Children[oldIndex] is not RibbonTab previousTab || stack.Children[newIndex] is not RibbonTab nextTab)
                 return;
 
             //Get offset of current item and the new one.
@@ -149,7 +149,7 @@ public class SideScrollViewer : ScrollViewer
                 KeyFrames =
                 {
                     new DiscreteDoubleKeyFrame(1, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0))),
-                    new DiscreteDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 5))),
+                    new DiscreteDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 5))), //5
                 }
             });
 
@@ -159,8 +159,7 @@ public class SideScrollViewer : ScrollViewer
             {
                 Children =
                 {
-                    new DoubleAnimation(previousTab.ActualWidth, nextTab.ActualWidth, new Duration(new TimeSpan(0, 0, 0, 1))) { EasingFunction = new PowerEase { Power = 9 }},
-                    new DoubleAnimation(nextTab.ActualWidth, nextTab.ActualWidth - 20, new Duration(new TimeSpan(0, 0, 0, 0, 500))) { BeginTime = new TimeSpan(0, 0, 0, 1), EasingFunction = new PowerEase { Power = 9 }},
+                    new DoubleAnimation(previousTab.ActualWidth, nextTab.ActualWidth - 20, new Duration(new TimeSpan(0, 0, 0, 0, 200))) { EasingFunction = new PowerEase { Power = 9 }}
                 }
             };
             Storyboard.SetTargetProperty(sizeStory, new PropertyPath("Width"));
@@ -170,8 +169,7 @@ public class SideScrollViewer : ScrollViewer
             {
                 Children =
                 {
-                    new ThicknessAnimation(new Thickness(offsetOld, 0, 0, 1), new Thickness(offsetNew, 0, 0, 1), new Duration(new TimeSpan(0, 0, 0, 1))) { EasingFunction = new PowerEase { Power = 9 }},
-                    new ThicknessAnimation(new Thickness(offsetNew, 0, 0, 1), new Thickness(offsetNew + 10, 0, 0, 1), new Duration(new TimeSpan(0, 0, 0, 0, 500))) { BeginTime = new TimeSpan(0, 0, 0, 1), EasingFunction = new PowerEase { Power = 9 }}
+                    new ThicknessAnimation(new Thickness(offsetOld + 10, 0, 10, 1), new Thickness(offsetNew + 10, 0, 0, 1), new Duration(new TimeSpan(0, 0, 0, 0, 500))) { EasingFunction = new PowerEase { Power = 9 }}
                 }
             };
             Storyboard.SetTargetProperty(marginStory, new PropertyPath("Margin"));
@@ -209,7 +207,7 @@ public class SideScrollViewer : ScrollViewer
     private void DetectVisibility()
     {
         //Determine the visibility of the Left and Right buttons based on the position of the scrollbar and the measured size of the Child.
-        if (!(Content is UIElement child))
+        if (Content is not UIElement child)
             return;
 
         //Display the left button when the HorizontalOffset is greater than zero.
@@ -226,7 +224,7 @@ public class SideScrollViewer : ScrollViewer
 
     private TabItem GetItemByOffset(double offset)
     {
-        if (!(Content is StackPanel stack))
+        if (Content is not StackPanel stack)
             return null;
 
         //If support for other items are needed: .Select(item => ItemContainerGenerator.ContainerFromItem(item) as TabItem)
@@ -248,7 +246,7 @@ public class SideScrollViewer : ScrollViewer
 
     private void ScrollToItem(TabItem si)
     {
-        if (si == null || !(Content is StackPanel stack))
+        if (si == null || Content is not StackPanel stack)
             return;
 
         var tabItems = stack.Children.Cast<TabItem>().ToList();

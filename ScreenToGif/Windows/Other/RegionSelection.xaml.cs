@@ -7,8 +7,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using ScreenToGif.Domain.Enums;
 using ScreenToGif.Domain.Models.Native;
-using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;
@@ -118,7 +118,7 @@ public partial class RegionSelection : Window
 
     private void Thumb_MouseMove(object sender, MouseEventArgs e)
     {
-        if (IsStatic || !(sender is Border border) || !border.IsMouseCaptured || e.LeftButton != MouseButtonState.Pressed)
+        if (IsStatic || sender is not Border border || !border.IsMouseCaptured || e.LeftButton != MouseButtonState.Pressed)
             return;
 
         var currentPosition = PointToScreen(e.GetPosition(this));
@@ -153,7 +153,7 @@ public partial class RegionSelection : Window
 
     private void Thumb_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (IsStatic || !(sender is Border border) || !border.IsMouseCaptured)
+        if (IsStatic || sender is not Border border || !border.IsMouseCaptured)
             return;
 
         border.ReleaseMouseCapture();
@@ -189,8 +189,8 @@ public partial class RegionSelection : Window
 
         Mode = mode ?? Mode;
         Rect = region;
-        IsStatic = !Mode.HasValue || Mode == ModeType.Fullscreen || !UserSettings.All.EnableSelectionPanning;
-        Opacity = !Mode.HasValue || Mode == ModeType.Fullscreen ? 0 : 1;
+        IsStatic = Mode is null or ModeType.Fullscreen || !UserSettings.All.EnableSelectionPanning;
+        Opacity = Mode is null or ModeType.Fullscreen ? 0 : 1;
 
         DisplaySelection();
         DisplayThumbs();

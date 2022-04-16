@@ -6,9 +6,9 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using ScreenToGif.Domain.Enums;
-using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;

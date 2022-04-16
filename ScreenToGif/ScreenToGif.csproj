@@ -153,7 +153,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScreenToGif.Native\ScreenToGif.Native.csproj" />
     <ProjectReference Include="..\ScreenToGif.ViewModel\ScreenToGif.ViewModel.csproj" />
   </ItemGroup>
   <ItemGroup>

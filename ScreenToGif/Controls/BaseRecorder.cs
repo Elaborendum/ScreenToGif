@@ -1,8 +1,8 @@
+using ScreenToGif.Domain.Enums;
+using ScreenToGif.Domain.Models.Project.Recording;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using ScreenToGif.Domain.Enums;
-using ScreenToGif.Model;
 
 namespace ScreenToGif.Controls;
 
@@ -51,5 +51,5 @@ public class BaseRecorder : Window
     /// <summary>
     /// The project information about the current recording.
     /// </summary>
-    internal ProjectInfo Project { get; set; }
+    internal RecordingProject Project { get; set; }
 }

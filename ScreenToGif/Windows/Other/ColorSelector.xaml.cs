@@ -181,7 +181,7 @@ public partial class ColorSelector : Window
         var str = new PointW();
         User32.GetCursorPos(ref str);
 
-        var image = Native.Helpers.Capture.CaptureScreenAsBitmapSource((int)_captureSize.Width, (int)_captureSize.Height, str.X - (int)(_captureSize.Width / 2d), str.Y - (int)(_captureSize.Height / 2d));
+        var image = Util.Native.Capture.CaptureScreenAsBitmapSource((int)_captureSize.Width, (int)_captureSize.Height, str.X - (int)(_captureSize.Width / 2d), str.Y - (int)(_captureSize.Height / 2d));
 
         if (image.Format != PixelFormats.Bgra32)
             image = new FormatConvertedBitmap(image, PixelFormats.Bgra32, null, 0);

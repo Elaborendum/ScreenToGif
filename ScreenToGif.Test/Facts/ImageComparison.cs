@@ -1,7 +1,7 @@
 using ScreenToGif.Model;
 using Xunit;
 
-namespace ScreenToGif.Test.Fact
+namespace ScreenToGif.Test.Facts
 {
     public class ImageComparison
     {

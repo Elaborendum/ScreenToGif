@@ -1,7 +1,10 @@
+using ScreenToGif.Domain.Models.Project.Recording;
 using System;
 using System.Windows;
 using ScreenToGif.Util;
 using ScreenToGif.ViewModel;
+using ScreenToGif.Windows.Other;
+using System.Threading.Tasks;
 
 namespace ScreenToGif.Windows;
 
@@ -12,12 +15,17 @@ public partial class EditorEx : Window
     /// <summary>
     /// Lock used to prevent firing multiple times (at the same time) both the Activated/Deactivated events.
     /// </summary>
-    public static readonly object ActivateLock = new object();
+    public static readonly object ActivateLock = new();
 
     private readonly EditorViewModel _editorViewModel;
 
     #endregion
 
+    #region Properties
+
+    public bool HasProjectLoaded => _editorViewModel?.Project != null;
+
+    #endregion
 
     public EditorEx()
     {
@@ -36,7 +44,7 @@ public partial class EditorEx : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-            
+        
     }
 
     private void Window_Activated(object sender, EventArgs e)
@@ -75,5 +83,32 @@ public partial class EditorEx : Window
         }
     }
 
+    private void ShowClipboardButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
     #endregion
+
+    public async Task LoadProject(RecordingProject project)
+    {
+        Activate();
+
+        if (project?.Any == true)
+            await _editorViewModel.ImportFromRecording(project);
+        
+        Encoder.Restore();
+        ShowInTaskbar = true;
+        WindowState = WindowState == WindowState.Minimized ? WindowState.Normal : WindowState;
+    }
+
+    public void LoadFromArguments()
+    {
+        //Identify arguments
+        //Validate what's comming.
+        //Only load groups of the same type (media, project).
+        //Load files
+        //Parse data.
+        //Create tracks/sequences for each file.
+    }
 }

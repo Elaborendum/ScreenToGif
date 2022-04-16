@@ -14,11 +14,11 @@ public class ShortcutKeys : IValueConverter
         switch (param)
         {
             case "1": //Start/Pause
-                return Native.Helpers.Other.GetSelectKeyText(UserSettings.All.StartPauseShortcut, UserSettings.All.StartPauseModifiers, true, true);
+                return Util.Native.Other.GetSelectKeyText(UserSettings.All.StartPauseShortcut, UserSettings.All.StartPauseModifiers, true, true);
             case "2": //Stop
-                return Native.Helpers.Other.GetSelectKeyText(UserSettings.All.StopShortcut, UserSettings.All.StopModifiers, true, true);
+                return Util.Native.Other.GetSelectKeyText(UserSettings.All.StopShortcut, UserSettings.All.StopModifiers, true, true);
             case "3": //Discard
-                return Native.Helpers.Other.GetSelectKeyText(UserSettings.All.DiscardShortcut, UserSettings.All.DiscardModifiers, true, true);
+                return Util.Native.Other.GetSelectKeyText(UserSettings.All.DiscardShortcut, UserSettings.All.DiscardModifiers, true, true);
         }
 
         return "";

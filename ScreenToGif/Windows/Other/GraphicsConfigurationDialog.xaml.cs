@@ -8,8 +8,8 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using ScreenToGif.Domain.Models.Native;
-using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
+using ScreenToGif.Util.Native;
 
 namespace ScreenToGif.Windows.Other;
 

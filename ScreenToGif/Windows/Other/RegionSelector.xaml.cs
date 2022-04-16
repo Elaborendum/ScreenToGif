@@ -7,8 +7,8 @@ using ScreenToGif.Domain.Enums;
 using ScreenToGif.Domain.Models;
 using ScreenToGif.Domain.Models.Native;
 using ScreenToGif.Util;
-using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;
@@ -70,7 +70,7 @@ public partial class RegionSelector : Window
         else if (mode == ModeType.Window)
         {
             //Get only the windows that are located inside the given screen.
-            var win = Native.Helpers.Windows.EnumerateWindowsByMonitor(monitor);
+            var win = Util.Native.Windows.EnumerateWindowsByMonitor(monitor);
 
             //Since each region selector is attached to a single screen, the list of positions must be translated.
             SelectControl.Windows = win.AdjustPosition(monitor.Bounds.Left, monitor.Bounds.Top);
@@ -80,7 +80,7 @@ public partial class RegionSelector : Window
             //Each selector is the whole screen.
             SelectControl.Windows = new List<DetectedRegion>
             {
-                new DetectedRegion(monitor.Handle, new Rect(new Size(monitor.Bounds.Width, monitor.Bounds.Height)), monitor.Name)
+                new(monitor.Handle, new Rect(new Size(monitor.Bounds.Width, monitor.Bounds.Height)), monitor.Name)
             };
         }
 
@@ -111,10 +111,10 @@ public partial class RegionSelector : Window
     {
         try
         {
-            var source = Dispatcher?.Invoke<PresentationSource>(() => PresentationSource.FromVisual(this));
+            var source = Dispatcher?.Invoke(() => PresentationSource.FromVisual(this));
 
             if (source?.CompositionTarget != null)
-                return Dispatcher.Invoke<double>(() => source.CompositionTarget.TransformToDevice.M11);
+                return Dispatcher.Invoke(() => source.CompositionTarget.TransformToDevice.M11);
             else
                 return 1;
         }
@@ -132,10 +132,10 @@ public partial class RegionSelector : Window
     {
         //A 7 pixel offset is added to allow the crop by the magnifying glass.
         if (addPadding)
-            return Native.Helpers.Capture.CaptureScreenAsBitmapSource((int)Math.Round((Width + 14 + 1) * _scale), (int)Math.Round((Height + 14 + 1) * _scale),
+            return Util.Native.Capture.CaptureScreenAsBitmapSource((int)Math.Round((Width + 14 + 1) * _scale), (int)Math.Round((Height + 14 + 1) * _scale),
                 (int)Math.Round((Left - 7) * _scale), (int)Math.Round((Top - 7) * _scale));
 
-        return Native.Helpers.Capture.CaptureScreenAsBitmapSource((int)Math.Round(Width * _scale), (int)Math.Round(Height * _scale),
+        return Util.Native.Capture.CaptureScreenAsBitmapSource((int)Math.Round(Width * _scale), (int)Math.Round(Height * _scale),
             (int)Math.Round(Left * _scale), (int)Math.Round(Top * _scale));
     }
 

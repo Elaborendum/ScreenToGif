@@ -11,8 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <PackageReference Include="KGySoft.Drawing" Version="6.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScreenToGif.Native\ScreenToGif.Native.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -64,8 +69,4 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <DefineConstants>$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\ScreenToGif.Model\ScreenToGif.Domain.csproj" />
-  </ItemGroup>
 </Project>

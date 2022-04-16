@@ -2,6 +2,7 @@ using System.ComponentModel;
 using ScreenToGif.Domain.Enums;
 using ScreenToGif.Native.External;
 using ScreenToGif.Native.Structs;
+using System.Windows;
 
 namespace ScreenToGif.Native.Helpers
 {
@@ -22,7 +23,7 @@ namespace ScreenToGif.Native.Helpers
         private uint _taskbarRestartMessageId;
 
         /// <summary>
-        /// The number of clicks between the first click and all clicks in between the maximum amount of time of SystemInformation.DoubleClickTime.
+        /// The number of clicks between the first click and all clicks in between the maximum amount of time of DoubleClickTime.
         /// </summary>
         private int _clickCount = 0;
 
@@ -74,7 +75,7 @@ namespace ScreenToGif.Native.Helpers
         {
             CreateMessageWindow();
 
-            _doubleClick.Interval = SystemInformation.DoubleClickTime;
+            _doubleClick.Interval = unchecked(User32.GetDoubleClickTime());
             _doubleClick.Tick += DoubleClick_Tick;
         }
 

@@ -6,14 +6,14 @@ namespace ScreenToGif.Util;
 /// <summary>
 /// Frame rate monitor. 
 /// </summary>
-public static class FrameRate
+public class CaptureStopwatch
 {
     #region Private Variables
 
-    private static Stopwatch _stopwatch = new();
-    private static int _interval = 15;
-    private static bool _started = true;
-    private static bool _fixedRate = false;
+    private Stopwatch _stopwatch = new();
+    private int _interval = 15;
+    private bool _started = true;
+    private bool _fixedRate;
 
     #endregion
 
@@ -21,7 +21,7 @@ public static class FrameRate
     /// Prepares the FrameRate monitor.
     /// </summary>
     /// <param name="interval">The selected interval of each snapshot.</param>
-    public static void Start(int interval)
+    public void Start(int interval)
     {
         _stopwatch = new Stopwatch();
 
@@ -34,7 +34,7 @@ public static class FrameRate
     /// </summary>
     /// <param name="useFixed">If true, uses the fixed internal provided.</param>
     /// <param name="interval">The fixed interval to be used.</param>
-    public static void Start(bool useFixed, int interval)
+    public void Start(bool useFixed, int interval)
     {
         _stopwatch = new Stopwatch();
 
@@ -46,7 +46,7 @@ public static class FrameRate
     /// Gets the diff between the last call.
     /// </summary>
     /// <returns>The amount of seconds.</returns>
-    public static int GetMilliseconds()
+    public int GetMilliseconds()
     {
         if (_fixedRate)
             return _interval;
@@ -65,9 +65,33 @@ public static class FrameRate
     }
 
     /// <summary>
+    /// Gets the diff between the last call.
+    /// </summary>
+    /// <returns>The amount of seconds.</returns>
+    public long GetMillisecondsAsLong()
+    {
+        if (_fixedRate)
+            return _interval;
+
+        if (_started)
+        {
+            _started = false;
+            _stopwatch.Start();
+            return _interval;
+        }
+
+        var mili = _stopwatch.ElapsedMilliseconds;
+        _stopwatch.Restart();
+
+        return mili;
+    }
+
+    public long GetElapsedTicks() => _stopwatch?.ElapsedTicks ?? -1L;
+
+    /// <summary>
     /// Determine that a stop/pause of the recording.
     /// </summary>
-    public static void Stop()
+    public void Stop()
     {
         _stopwatch.Stop();
         _started = true;

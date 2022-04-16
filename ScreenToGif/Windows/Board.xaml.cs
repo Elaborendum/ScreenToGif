@@ -107,7 +107,7 @@ public partial class Board
             {
                 try
                 {
-                    File.Delete(frame.Path);
+                    //File.Delete(frame.Path);
                 }
                 catch (Exception)
                 { }
@@ -115,7 +115,7 @@ public partial class Board
 
             try
             {
-                Directory.Delete(Project.FullPath, true);
+                //Directory.Delete(Project.FullPath, true);
             }
             catch (Exception ex)
             {
@@ -154,8 +154,8 @@ public partial class Board
 
                 _capture = new Timer { Interval = 1000 / FpsNumericUpDown.Value };
 
-                Project?.Clear();
-                Project = new ProjectInfo().CreateProjectFolder(ProjectByType.BoardRecorder);
+                //Project?.Clear();
+                //Project = new ProjectInfo().CreateProjectFolder(ProjectSources.BoardRecorder);
 
                 HeightIntegerBox.IsEnabled = false;
                 WidthIntegerBox.IsEnabled = false;
@@ -164,7 +164,7 @@ public partial class Board
                 IsRecording = true;
                 Topmost = true;
 
-                FrameRate.Start(_capture.Interval);
+                Capture.StartStopwatch(false, _capture.Interval);
 
                 #region Start
 
@@ -211,7 +211,7 @@ public partial class Board
 
                 _capture.Stop();
 
-                FrameRate.Stop();
+                Capture.StopStopwatch();
                 break;
 
             #endregion
@@ -225,7 +225,7 @@ public partial class Board
 
                 AutoFitButtons();
 
-                FrameRate.Start(_capture.Interval);
+                Capture.StartStopwatch(false, _capture.Interval);
 
                 _capture.Start();
                 break;
@@ -254,7 +254,7 @@ public partial class Board
             FrameCount = 0;
 
             _capture.Stop();
-            FrameRate.Stop();
+            Capture.StopStopwatch();
 
             if (Stage != RecorderStages.Stopped && Stage != RecorderStages.PreStarting && Project.Any)
             {
@@ -318,15 +318,15 @@ public partial class Board
 
     private void Normal_Elapsed(object sender, EventArgs e)
     {
-        var fileName = $"{Project.FullPath}{FrameCount}.png";
+        //var fileName = $"{Project.FullPath}{FrameCount}.png";
 
         //TODO: GetRender fails to create useful image when the control has decimals values as size.
 
         var render = MainBorder.GetRender(_dpi); //TODO: Too heavy! Maybe just save the strokes? like layers?
 
-        Project.Frames.Add(new FrameInfo(fileName, FrameRate.GetMilliseconds()));
+        //Project.Frames.Add(new FrameInfo(fileName, CaptureStopwatch.GetMilliseconds()));
 
-        ThreadPool.QueueUserWorkItem(delegate { AddFrames(fileName, render); });
+        //ThreadPool.QueueUserWorkItem(delegate { AddFrames(fileName, render); });
 
         FrameCount++;
     }
@@ -351,7 +351,7 @@ public partial class Board
             return;
 
         _capture.Stop();
-        FrameRate.Stop();
+        Capture.StopStopwatch();
         FrameCount = 0;
         Stage = RecorderStages.Stopped;
 

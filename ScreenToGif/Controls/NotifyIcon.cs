@@ -14,6 +14,7 @@ using ScreenToGif.Native.External;
 using ScreenToGif.Native.Helpers;
 using ScreenToGif.Native.Structs;
 using ScreenToGif.Util;
+using ScreenToGif.Util.Native;
 using Other = ScreenToGif.Util.Other;
 
 namespace ScreenToGif.Controls;
@@ -275,7 +276,7 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
     private static void DataContextPropertyChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
     {
-        if (!(o is NotifyIcon control))
+        if (o is not NotifyIcon control)
             return;
 
         control.UpdateDataContext(control.NotifyToolTipElement, e.OldValue, e.NewValue);
@@ -286,7 +287,7 @@ internal class NotifyIcon : FrameworkElement, IDisposable
     {
         var control = o as NotifyIcon;
 
-        if (!(e.NewValue is ContextMenu newValue))
+        if (e.NewValue is not ContextMenu newValue)
             return;
 
         control?.UpdateDataContext(newValue, null, control.DataContext);
@@ -303,7 +304,7 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
     private static void ToolTipPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (!(d is NotifyIcon owner))
+        if (d is not NotifyIcon owner)
             return;
 
         owner.CreateCustomToolTip();
@@ -312,7 +313,7 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
     private static void ToolTipTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (!(d is NotifyIcon owner))
+        if (d is not NotifyIcon owner)
             return;
 
         if (owner.NotifyToolTip == null)
@@ -420,7 +421,8 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
     private void UpdateDataContext(FrameworkElement target, object oldDataContextValue, object newDataContextValue)
     {
-        if (target == null || target.IsDataContextDataBound()) return;
+        if (target == null || target.IsDataContextDataBound())
+            return;
 
         //if the target's data context is the NotifyIcon's old DataContext or the NotifyIcon itself, update it.
         if (ReferenceEquals(this, target.DataContext) || Equals(oldDataContextValue, target.DataContext))
@@ -566,7 +568,9 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
             var args = new RoutedEventArgs { RoutedEvent = PreviewToolTipOpenEvent };
             RaiseEvent(args);
-            if (args.Handled) return;
+
+            if (args.Handled)
+                return;
 
             //TODO: test this.
             NotifyToolTipElement.IsOpen = true;
@@ -609,7 +613,8 @@ internal class NotifyIcon : FrameworkElement, IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (IsDisposed || !disposing) return;
+        if (IsDisposed || !disposing)
+            return;
 
         lock (this)
         {

@@ -180,6 +180,11 @@ public static class StreamHelpers
 
     #region Write
 
+    public static void WriteBoolean(this Stream ms, bool value)
+    {
+        ms.WriteByte(value ? (byte)1 : (byte)0);
+    }
+
     public static void WriteByte(this Stream ms, int position, byte value)
     {
         var prevPosition = ms.Position;
@@ -259,9 +264,9 @@ public static class StreamHelpers
         }
     }
 
-    public static void WritePascalString(this Stream ms, string value, bool padded = true)
+    public static void WritePascalString(this Stream ms, string value, bool padded = false)
     {
-        var bytes = Encoding.Unicode.GetBytes(value);
+        var bytes = string.IsNullOrEmpty(value) ? Array.Empty<byte>() : Encoding.UTF8.GetBytes(value);
 
         ms.WriteByte((byte)bytes.Length); //String size, 1 byte.
         ms.Write(bytes, 0, bytes.Length); //String, XX bytes.
@@ -285,9 +290,26 @@ public static class StreamHelpers
 
         var padding = 4 - (bytes.Length + 1) % 4;
 
-        if (padding != 4) //There's zero padding if equals to 4.
-            for (int i = 0; i < padding; i++) 
-                ms.WriteByte(0);
+        if (padding == 4)
+            return;
+
+        //There's zero padding if equals to 4.
+        for (var i = 0; i < padding; i++) 
+            ms.WriteByte(0);
+    }
+
+    public static void WritePascalStringUInt32(this Stream ms, string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            ms.WriteUInt32(0); //String size, 4 bytes.
+            return;
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(value);
+
+        ms.WriteUInt32((uint) bytes.Length); //String size, 4 bytes.
+        ms.Write(bytes, 0, bytes.Length); //String, XX bytes.
     }
 
     public static void WriteInt16(this Stream ms, short value)
@@ -320,31 +342,49 @@ public static class StreamHelpers
         WriteBytes(ms, position, BitConverter.GetBytes(value));
     }
 
+    /// <summary>
+    /// Writes an unsigned short as 2 bytes.
+    /// </summary>
     public static void WriteUInt16(this Stream ms, ushort value)
     {
         ms.Write(BitConverter.GetBytes(value), 0, 2);
     }
 
+    /// <summary>
+    /// Writes an unsigned short as 2 bytes.
+    /// </summary>
     public static void WriteUInt16(this Stream ms, int position, ushort value)
     {
         WriteBytes(ms, position, BitConverter.GetBytes(value));
     }
 
+    /// <summary>
+    /// Writes an unsigned integer as 4 bytes.
+    /// </summary>
     public static void WriteUInt32(this Stream ms, uint value)
     {
         ms.Write(BitConverter.GetBytes(value), 0, 4);
     }
 
+    /// <summary>
+    /// Writes an unsigned integer as 4 bytes.
+    /// </summary>
     public static void WriteUInt32(this Stream ms, int position, uint value)
     {
         WriteBytes(ms, position, BitConverter.GetBytes(value));
     }
 
+    /// <summary>
+    /// Writes an unsigned long as 8 bytes.
+    /// </summary>
     public static void WriteUInt64(this Stream ms, ulong value)
     {
         ms.Write(BitConverter.GetBytes(value), 0, 8);
     }
 
+    /// <summary>
+    /// Writes an unsigned long as 8 bytes.
+    /// </summary>
     public static void WriteUInt64(this Stream ms, int position, ulong value)
     {
         WriteBytes(ms, position, BitConverter.GetBytes(value));

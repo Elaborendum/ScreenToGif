@@ -1,19 +1,18 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using ScreenToGif.Capture;
 using ScreenToGif.Domain.Enums;
 using ScreenToGif.Domain.Interfaces;
-using ScreenToGif.Model;
+using ScreenToGif.Domain.Models.Project.Recording;
 using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util;
+using ScreenToGif.Util.Capture;
 using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Controls;
 
-public class BaseScreenRecorder : BaseRecorder
+public class BaseScreenRecorder : BaseRecorder, IDisposable
 {
     #region Variables
 
@@ -23,41 +22,28 @@ public class BaseScreenRecorder : BaseRecorder
     private CancellationTokenSource _captureToken;
 
     /// <summary>
-    /// Indicates when the user is mouse-clicking.
-    /// </summary>
-    internal MouseButtons RecordClicked = MouseButtons.None;
-
-    /// <summary>
     /// Deals with all screen capture methods.
     /// </summary>
-    internal ICapture Capture;
-
-    /// <summary>
-    /// Lists of pressed keys.
-    /// </summary>
-    internal readonly List<IKeyGesture> KeyList = new();
+    internal IScreenCapture Capture;
 
     /// <summary>
     /// Timer responsible for the forced clean up of the objects in memory.
     /// </summary>
-    internal readonly System.Timers.Timer GarbageTimer = new System.Timers.Timer();
+    internal readonly System.Timers.Timer GarbageTimer = new();
 
     #endregion
-
-
+    
     public BaseScreenRecorder()
     {
         GarbageTimer.Interval = 3000;
         GarbageTimer.Elapsed += GarbageTimer_Tick;
     }
 
-
     private void GarbageTimer_Tick(object sender, EventArgs e)
     {
         GC.Collect(2);
     }
-
-
+    
     internal bool HasFixedDelay()
     {
         return UserSettings.All.CaptureFrequency != CaptureFrequencies.PerSecond || UserSettings.All.FixedFrameRate;
@@ -65,48 +51,41 @@ public class BaseScreenRecorder : BaseRecorder
 
     internal int GetFixedDelay()
     {
-        switch (UserSettings.All.CaptureFrequency)
+        return UserSettings.All.CaptureFrequency switch
         {
-            case CaptureFrequencies.Manual:
-                return UserSettings.All.PlaybackDelayManual;
-            case CaptureFrequencies.Interaction:
-                return UserSettings.All.PlaybackDelayInteraction;
-            case CaptureFrequencies.PerMinute:
-                return UserSettings.All.PlaybackDelayMinute;
-            case CaptureFrequencies.PerHour:
-                return UserSettings.All.PlaybackDelayHour;
-            default: //When the capture is 'PerSecond', the fixed delay is set to use the current framerate.
-                return 1000 / UserSettings.All.LatestFps;
-        }
+            CaptureFrequencies.Manual => UserSettings.All.PlaybackDelayManual,
+            CaptureFrequencies.Interaction => UserSettings.All.PlaybackDelayInteraction,
+            CaptureFrequencies.PerMinute => UserSettings.All.PlaybackDelayMinute,
+            CaptureFrequencies.PerHour => UserSettings.All.PlaybackDelayHour,
+
+            //When the capture is 'PerSecond', the fixed delay is set to use the current framerate.
+            _ => 1000 / UserSettings.All.LatestFps 
+        };
     }
 
     internal int GetCaptureInterval()
     {
-        switch (UserSettings.All.CaptureFrequency)
+        return UserSettings.All.CaptureFrequency switch
         {
-            case CaptureFrequencies.PerHour: //15 frames per hour = 240,000 ms (240 sec, 4 min).
-                return (1000 * 60 * 60) / UserSettings.All.LatestFps;
+            //15 frames per hour = 240,000 ms (240 sec, 4 min).
+            CaptureFrequencies.PerHour => (1000 * 60 * 60) / UserSettings.All.LatestFps,
 
-            case CaptureFrequencies.PerMinute: //15 frames per minute = 4,000 ms (4 sec).
-                return (1000 * 60) / UserSettings.All.LatestFps;
+            //15 frames per minute = 4,000 ms (4 sec).
+            CaptureFrequencies.PerMinute => (1000 * 60) / UserSettings.All.LatestFps,
 
-            default: //PerSecond. 15 frames per second = 66 ms.
-                return 1000 / UserSettings.All.LatestFps;
-        }
+            //15 frames per second = 66.66 ms
+            _ => 1000 / UserSettings.All.LatestFps
+        };
     }
 
-    internal ICapture GetDirectCapture()
+    internal IScreenCapture GetDirectCapture()
     {
-        if (UserSettings.All.OnlyCaptureChanges)
-            return UserSettings.All.UseMemoryCache ? (ICapture)new DirectChangedCachedCapture() : new DirectChangedImageCapture();
-
-        return UserSettings.All.UseMemoryCache ? new DirectCachedCapture() : new DirectImageCapture();
+        return UserSettings.All.OnlyCaptureChanges ? new DirectChangedCapture() : new DirectCapture();
     }
-
-
+    
     internal virtual void StartCapture()
     {
-        FrameRate.Start(HasFixedDelay(), GetFixedDelay());
+        Capture.StartStopwatch(HasFixedDelay(), GetFixedDelay());
         HasImpreciseCapture = false;
 
         if (UserSettings.All.ForceGarbageCollection)
@@ -123,14 +102,14 @@ public class BaseScreenRecorder : BaseRecorder
 
     internal virtual void PauseCapture()
     {
-        FrameRate.Stop();
+        Capture.StopStopwatch();
 
         StopInternalCapture();
     }
 
     internal virtual async Task StopCapture()
     {
-        FrameRate.Stop();
+        Capture.StopStopwatch();
 
         StopInternalCapture();
 
@@ -178,8 +157,7 @@ public class BaseScreenRecorder : BaseRecorder
             sw.Restart();
 
             //Capture frame.
-            var frame = new FrameInfo(RecordClicked, KeyList);
-            KeyList.Clear();
+            var frame = new RecordingFrame();
 
             var frameCount = Capture.CaptureWithCursor(frame);
             Dispatcher.Invoke(() => FrameCount = frameCount);
@@ -206,9 +184,8 @@ public class BaseScreenRecorder : BaseRecorder
             sw.Restart();
 
             //Capture frame.
-            var frame = new FrameInfo(RecordClicked, KeyList);
-            KeyList.Clear();
-
+            var frame = new RecordingFrame();
+            
             var frameCount = Capture.Capture(frame);
             Dispatcher.Invoke(() => FrameCount = frameCount);
 
@@ -223,5 +200,12 @@ public class BaseScreenRecorder : BaseRecorder
         }
 
         sw.Stop();
+    }
+
+    public void Dispose()
+    {
+        StopInternalCapture();
+
+        GarbageTimer?.Dispose();
     }
 }

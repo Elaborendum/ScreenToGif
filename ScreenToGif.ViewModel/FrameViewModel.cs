@@ -5,14 +5,20 @@ namespace ScreenToGif.ViewModel;
 public class FrameViewModel : BaseViewModel
 {
     private string _image;
+    private long _imagePosition;
     private int _number;
     private int _delay;
-
-
+    
     public string Image
     {
         get => _image;
         set => SetProperty(ref _image, value);
+    }
+
+    public long ImagePosition
+    {
+        get => _imagePosition;
+        set => SetProperty(ref _imagePosition, value);
     }
 
     public int Number

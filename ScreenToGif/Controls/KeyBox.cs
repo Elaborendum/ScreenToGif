@@ -1,3 +1,4 @@
+using ScreenToGif.Util.Native;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -148,7 +149,7 @@ public class KeyBox : ContentControl
 
         if (box.OnlyModifiers && box.ModifierKeys != ModifierKeys.None)
         {
-            box.Text = Native.Helpers.Other.GetSelectKeyText(box.ModifierKeys);
+            box.Text = Other.GetSelectKeyText(box.ModifierKeys);
             box.IsSelectionFinished = true;
             return;
         }
@@ -156,7 +157,7 @@ public class KeyBox : ContentControl
         if (box.MainKey == null)
             return;
 
-        box.Text = Native.Helpers.Other.GetSelectKeyText(box.MainKey ?? Key.None, box.ModifierKeys, !(box.IsSingleLetterLowerCase && box.ModifierKeys == ModifierKeys.None), !box.DisplayNone);
+        box.Text = Other.GetSelectKeyText(box.MainKey ?? Key.None, box.ModifierKeys, !(box.IsSingleLetterLowerCase && box.ModifierKeys == ModifierKeys.None), !box.DisplayNone);
         box.IsSelectionFinished = true;
     }
 
@@ -212,7 +213,7 @@ public class KeyBox : ContentControl
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
         //If not all keys are allowed, enter or tab keys presses moves the focus.
-        if (!AllowAllKeys && (e.Key == Key.Enter || e.Key == Key.Tab))
+        if (!AllowAllKeys && e.Key is Key.Enter or Key.Tab)
         {
             MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             return;
@@ -257,22 +258,22 @@ public class KeyBox : ContentControl
                 MainKey = key;
 
                 //TODO:
-                if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && (key == Key.LeftCtrl || key == Key.RightCtrl))
+                if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && key is Key.LeftCtrl or Key.RightCtrl)
                 {
                     IsControlDown = false;
                     ModifierKeys = ModifierKeys.None;
                 }
-                else if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt && (key == Key.LeftAlt || key == Key.RightAlt))
+                else if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt && key is Key.LeftAlt or Key.RightAlt)
                 {
                     IsAltDown = false;
                     ModifierKeys = ModifierKeys.None;
                 }
-                else if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift && (key == Key.LeftShift || key == Key.RightShift))
+                else if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift && key is Key.LeftShift or Key.RightShift)
                 {
                     IsShiftDown = false;
                     ModifierKeys = ModifierKeys.None;
                 }
-                else if ((Keyboard.Modifiers & ModifierKeys.Windows) == ModifierKeys.Windows && (key == Key.LWin || key == Key.RWin))
+                else if ((Keyboard.Modifiers & ModifierKeys.Windows) == ModifierKeys.Windows && key is Key.LWin or Key.RWin)
                 {
                     IsWindowsDown = false;
                     ModifierKeys = ModifierKeys.None;
@@ -322,7 +323,7 @@ public class KeyBox : ContentControl
 
     protected override void OnPreviewKeyUp(KeyEventArgs e)
     {
-        if ((e.Key == Key.Enter || e.Key == Key.Tab) && !AllowAllKeys)
+        if (e.Key is Key.Enter or Key.Tab && !AllowAllKeys)
             return;
 
         if (e.Key == Key.PrintScreen && !OnlyModifiers)

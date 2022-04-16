@@ -16,7 +16,7 @@ public class CommandToInputGestureText : IValueConverter
 
         //var keys = Native.GetSelectKeyText(gesture.Key, gesture.Modifiers);
         foreach (KeyGesture gesture in command.InputGestures)
-            return $"{LocalizationHelper.Get(command.Text) ?? command.Text}\n({Native.Helpers.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)})";
+            return $"{LocalizationHelper.Get(command.Text) ?? command.Text}\n({Util.Native.Other.GetSelectKeyText(gesture.Key, gesture.Modifiers)})";
 
         return Binding.DoNothing;
     }

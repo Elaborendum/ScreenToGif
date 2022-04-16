@@ -41,6 +41,7 @@ using System.Windows.Data;
 using System.Windows.Media.Effects;
 using ScreenToGif.Domain.Enums;
 using ScreenToGif.Domain.Interfaces;
+using ScreenToGif.Domain.Models.Project.Recording;
 using ScreenToGif.UserControls;
 using ScreenToGif.ViewModel;
 using ScreenToGif.ViewModel.Tasks;
@@ -49,6 +50,7 @@ using ScreenToGif.Native.Helpers;
 using ScreenToGif.Util.Codification.Apng;
 using ScreenToGif.Util.Codification.Gif.Decoder;
 using ScreenToGif.Util.Extensions;
+using ScreenToGif.Util.Native;
 using ScreenToGif.Util.Settings;
 using ScreenToGif.ViewModel.ExportPresets;
 using ScreenToGif.ViewModel.ExportPresets.Image;
@@ -216,7 +218,7 @@ namespace ScreenToGif.Windows
         /// <summary>
         /// Lock used to prevent firing multiple times (at the same time) both the Activated/Deactivated events.
         /// </summary>
-        public static readonly object ActivateLock = new object();
+        public static readonly object ActivateLock = new();
 
         #endregion
 
@@ -611,7 +613,7 @@ namespace ScreenToGif.Windows
             Pause();
 
             //Start new project.
-            var project = new ProjectInfo().CreateProjectFolder(ProjectByType.Editor);
+            var project = new ProjectInfo().CreateProjectFolder(ProjectSources.Editor);
 
             var fileName = Path.Combine(project.FullPath, "0.png");
 
@@ -638,7 +640,7 @@ namespace ScreenToGif.Windows
 
             ClosePanel();
 
-            project.Frames = new List<FrameInfo> { new FrameInfo(fileName, 66) };
+            project.Frames = new List<FrameInfo> { new(fileName, 66) };
 
             LoadProject(project);
             ShowHint("S.Hint.NewAnimation");
@@ -680,7 +682,7 @@ namespace ScreenToGif.Windows
             WindowState = WindowState.Minimized;
             Encoder.Minimize();
 
-            ProjectInfo project = null;
+            RecordingProject project = null;
 
             if (UserSettings.All.NewRecorder)
             {
@@ -715,14 +717,15 @@ namespace ScreenToGif.Windows
 
             #region Insert
 
-            var insert = new Insert(Project.Frames.CopyList(), project.Frames, FrameListView.SelectedIndex) { Owner = this };
-            var result = insert.ShowDialog();
+            //TODO: Solve how to insert recordings.
+            //var insert = new Insert(Project.Frames.CopyList(), project.Frames, FrameListView.SelectedIndex) { Owner = this };
+            //var result = insert.ShowDialog();
 
-            if (result.HasValue && result.Value)
-            {
-                Project.Frames = insert.CurrentList;
-                await LoadSelectedStarter(0);
-            }
+            //if (result.HasValue && result.Value)
+            //{
+            //    Project.Frames = insert.CurrentList;
+            //    await LoadSelectedStarter(0);
+            //}
 
             #endregion
 
@@ -751,15 +754,16 @@ namespace ScreenToGif.Windows
 
             #region Insert
 
-            var insert = new Insert(Project.Frames.CopyList(), recorder.Project.Frames, FrameListView.SelectedIndex) { Owner = this };
+            //TODO: Solve how to insert recordings.
+            //var insert = new Insert(Project.Frames.CopyList(), recorder.Project.Frames, FrameListView.SelectedIndex) { Owner = this };
 
-            var result = insert.ShowDialog();
+            //var result = insert.ShowDialog();
 
-            if (result.HasValue && result.Value)
-            {
-                Project.Frames = insert.CurrentList;
-                await LoadSelectedStarter(0);
-            }
+            //if (result.HasValue && result.Value)
+            //{
+            //    Project.Frames = insert.CurrentList;
+            //    await LoadSelectedStarter(0);
+            //}
 
             #endregion
         }
@@ -785,15 +789,16 @@ namespace ScreenToGif.Windows
 
             #region Insert
 
-            var insert = new Insert(Project.Frames.CopyList(), recorder.Project.Frames, FrameListView.SelectedIndex) { Owner = this };
+            //TODO: Solve how to insert recordings.
+            //var insert = new Insert(Project.Frames.CopyList(), recorder.Project.Frames, FrameListView.SelectedIndex) { Owner = this };
 
-            var result = insert.ShowDialog();
+            //var result = insert.ShowDialog();
 
-            if (result.HasValue && result.Value)
-            {
-                Project.Frames = insert.CurrentList;
-                await LoadSelectedStarter(0);
-            }
+            //if (result.HasValue && result.Value)
+            //{
+            //    Project.Frames = insert.CurrentList;
+            //    await LoadSelectedStarter(0);
+            //}
 
             #endregion
         }
@@ -3486,7 +3491,7 @@ namespace ScreenToGif.Windows
                                 {
                                     case TaskTypes.MouseEvents:
                                     {
-                                        if (Project.CreatedBy == ProjectByType.ScreenRecorder)
+                                        if (Project.CreatedBy == ProjectSources.ScreenRecorder)
                                             MouseEventsAsync(task as MouseEventsViewModel ?? MouseEventsViewModel.FromSettings());
 
                                         break;
@@ -3494,7 +3499,7 @@ namespace ScreenToGif.Windows
 
                                     case TaskTypes.KeyStrokes:
                                     {
-                                        if (Project.CreatedBy == ProjectByType.ScreenRecorder)
+                                        if (Project.CreatedBy == ProjectSources.ScreenRecorder)
                                             KeyStrokesAsync(task as KeyStrokesViewModel ?? KeyStrokesViewModel.FromSettings());
 
                                         break;
@@ -3502,7 +3507,7 @@ namespace ScreenToGif.Windows
 
                                     case TaskTypes.Delay:
                                     {
-                                        if (Project.CreatedBy != ProjectByType.Editor && Project.CreatedBy != ProjectByType.Unknown)
+                                        if (Project.CreatedBy != ProjectSources.Editor && Project.CreatedBy != ProjectSources.Unknown)
                                             DelayAsync(task as DelayViewModel ?? DelayViewModel.FromSettings(), true, true);
 
                                         break;
@@ -3510,7 +3515,7 @@ namespace ScreenToGif.Windows
 
                                     case TaskTypes.Progress:
                                     {
-                                        if (Project.CreatedBy != ProjectByType.Editor && Project.CreatedBy != ProjectByType.Unknown)
+                                        if (Project.CreatedBy != ProjectSources.Editor && Project.CreatedBy != ProjectSources.Unknown)
                                             ProgressAsync(task as ProgressViewModel ?? ProgressViewModel.FromSettings());
 
                                         break;
@@ -3518,7 +3523,7 @@ namespace ScreenToGif.Windows
 
                                     case TaskTypes.Border:
                                     {
-                                        if (Project.CreatedBy != ProjectByType.Editor && Project.CreatedBy != ProjectByType.Unknown)
+                                        if (Project.CreatedBy != ProjectSources.Editor && Project.CreatedBy != ProjectSources.Unknown)
                                             BorderAsync(task as BorderViewModel ?? BorderViewModel.FromSettings());
 
                                         break;
@@ -3526,7 +3531,7 @@ namespace ScreenToGif.Windows
 
                                     case TaskTypes.Shadow:
                                     {
-                                        if (Project.CreatedBy != ProjectByType.Editor && Project.CreatedBy != ProjectByType.Unknown)
+                                        if (Project.CreatedBy != ProjectSources.Editor && Project.CreatedBy != ProjectSources.Unknown)
                                             ShadowAsync(task as ShadowViewModel ?? ShadowViewModel.FromSettings());
 
                                         break;
@@ -3845,7 +3850,7 @@ namespace ScreenToGif.Windows
 
             ShowProgress(LocalizationHelper.Get("S.Editor.PreparingImport"), 100, false);
 
-            var project = new ProjectInfo().CreateProjectFolder(ProjectByType.Editor);
+            var project = new ProjectInfo().CreateProjectFolder(ProjectSources.Editor);
             var currentDpi = 0D;
             var currentSize = Size.Empty;
             var wasWarned = false;
@@ -3921,7 +3926,7 @@ namespace ScreenToGif.Windows
 
             ShowProgress(LocalizationHelper.Get("S.Editor.PreparingImport"), 100);
 
-            var project = new ProjectInfo().CreateProjectFolder(ProjectByType.Editor);
+            var project = new ProjectInfo().CreateProjectFolder(ProjectSources.Editor);
             var currentDpi = 0D;
             var currentSize = Size.Empty;
             var wasWarned = false;
@@ -5749,7 +5754,7 @@ namespace ScreenToGif.Windows
 
                 #region Prepare the text
 
-                var text = keyList.Select(x => "" + Native.Helpers.Other.GetSelectKeyText(x.Key, x.Modifiers, x.IsUppercase)).Aggregate((p, n) => p + model.KeyStrokesSeparator + n);
+                var text = keyList.Select(x => "" + Util.Native.Other.GetSelectKeyText(x.Key, x.Modifiers, x.IsUppercase)).Aggregate((p, n) => p + model.KeyStrokesSeparator + n);
 
                 if (string.IsNullOrEmpty(text))
                 {
